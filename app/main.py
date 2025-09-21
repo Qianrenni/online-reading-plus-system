@@ -5,8 +5,8 @@ from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redi
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1 import user_router
+from app.api.v1.token import token_router
 from app.core.database import create_database_and_tables
-from app.core.security import token_router
 from app.middleware.logging import logger
 
 # 在 main.py 中注册

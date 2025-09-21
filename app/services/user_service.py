@@ -1,10 +1,9 @@
-from typing import Optional
-from sqlmodel import select
 from sqlalchemy.exc import IntegrityError
+from sqlmodel import select
 
 from app.core.database import DataBaseSessionDepency
-from app.models.sql.user import User
 from app.core.security import get_password_hash, verify_password
+from app.models.sql.user import User
 
 
 class UserService:
@@ -69,7 +68,7 @@ class UserService:
     @staticmethod
     async def authenticate_user(
         db: DataBaseSessionDepency,
-        username: str,
+        user_email: str,
         password: str
     ) -> User|None:
         """
@@ -77,7 +76,7 @@ class UserService:
         
         Args:
             db: 数据库会话依赖
-            username: 用户名
+            user_email:  用户邮箱
             password: <PASSWORD>
 
         Returns:
@@ -86,7 +85,7 @@ class UserService:
         Raises:
             ValueError: 当用户名或密码无效时抛出
         """
-        statement = select(User).where(User.username == username)
+        statement = select(User).where(User.email == user_email)
         result = await db.exec(statement)
         user = result.first()
         if not user:
@@ -96,4 +95,44 @@ class UserService:
         else:
             raise ValueError("用户名或密码无效")
 
+
+    @staticmethod
+    async def update_password(
+        db: DataBaseSessionDepency,
+        user_email: str,
+        old_password: str,
+        new_password: str
+    ) -> bool:
+        """
+        更新用户密码
+        
+        Args:
+            db: 数据库会话依赖
+            username: 用户名
+            old_password: <PASSWORD>
+            new_password: <PASSWORD>
+
+        Returns:
+            bool: 如果密码更新成功，则返回True，否则返回False
+
+        Raises:
+            ValueError: 当旧密码无效时抛出
+        """
+        statement = select(User).where(User.email == user_email)
+        user = (await db.exec(statement)).first()
+
+        if not user:
+            raise ValueError("账号不存在")
+        if not verify_password(old_password, user.password):
+            raise ValueError("旧密码错误")
+
+        user.password = get_password_hash(new_password)
+
+        try:
+            await db.commit()
+            await db.refresh(user)
+            return True
+        except Exception as e:
+            await db.rollback()
+            raise ValueError(f"密码更新失败: {str(e)}")
 user_service = UserService()

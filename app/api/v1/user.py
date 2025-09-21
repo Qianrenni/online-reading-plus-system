@@ -1,12 +1,10 @@
-from datetime import timedelta
 import re
 from typing import Annotated
+
 from fastapi import APIRouter, Body, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
-from app.core.config import settings
 from app.core.database import DataBaseSessionDepency
-from app.core.security import Token, create_access_token
 from app.models.sql.user import User
 from app.services.user_service import user_service
 
@@ -20,7 +18,7 @@ class UserRegister(BaseModel):
     avatar: str = ''
 
     @field_validator('username')
-    def validate_username(cls, username):
+    def validate_username(cls, username: str):
         if len(username) < 3:
             raise ValueError('用户名长度至少为3个字符')
         if len(username) > 20:
@@ -30,26 +28,10 @@ class UserRegister(BaseModel):
         return username
 
     @field_validator('password')
-    def validate_password(cls, password):
+    def validate_password(cls, password: str):
         if len(password) < 6:
             raise ValueError('密码长度至少为6个字符')
         return password
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "username": "test",
-                "password": "password",
-                "email": "test@example.com",
-                "avatar": ""
-            }
-        }
-    }
-
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
 
 @user_router.post('/register', response_model=User)
 async def register(user: Annotated[UserRegister, Body()],database: DataBaseSessionDepency):
@@ -77,36 +59,43 @@ async def register(user: Annotated[UserRegister, Body()],database: DataBaseSessi
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-@user_router.post('/login',response_model=Token)
-async def login(user: Annotated[UserLogin, Body()], database: DataBaseSessionDepency):
+
+class UserPasswordUpdate(BaseModel):
     """
-    用户登录接口
+    用户密码更新模型
+    - **username**: 邮箱地址
+    - **password**: 当前密码
+    - **new_password**: 新密码
+    """
+    username: str
+    old_password: str
+    new_password: str
+@user_router.patch('/update-password')
+async def update_user(user: Annotated[UserPasswordUpdate, Body()], database: DataBaseSessionDepency):
+    """
+    更新用户密码
     
     - **username**: 用户名
-    - **password**: 密码
+    - **password**: 当前密码
+    - **new_password**: 新密码
     
-    返回访问令牌
+    返回更新后的用户信息
     """
-    error =HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
     try:
-        db_user = await user_service.authenticate_user(
+        result = await user_service.update_password(
             db=database,
-            username=user.username,
-            password=user.password
+            user_email=user.username,
+            old_password=user.old_password,
+            new_password=user.new_password,
         )
-        if db_user:
-            access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-            access_token = create_access_token(
-                data={"sub": db_user.username}, expires_delta=access_token_expires
-            )
-            return Token(access_token=access_token, token_type="bearer")
-        else:
-            raise error
+        if  result == True:
+            return {"message":"密码修改成功"}
+    except ValueError  as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
         
-    except ValueError as e:
-        raise error
+
+    
+    
