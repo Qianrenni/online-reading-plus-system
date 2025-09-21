@@ -14,7 +14,7 @@ from app.middleware.logging import logger
 app = FastAPI(docs_url=None)
 
 # 挂载静态文件目录
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="./app/static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
