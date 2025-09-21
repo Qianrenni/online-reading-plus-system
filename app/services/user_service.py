@@ -3,7 +3,7 @@ from sqlmodel import select
 
 from app.core.database import DataBaseSessionDepency
 from app.core.security import get_password_hash, verify_password
-from app.models.sql.user import User
+from app.models.sql.User import User
 
 
 class UserService:

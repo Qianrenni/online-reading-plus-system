@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.database import DataBaseSessionDepency
-from app.models.sql.user import User
+from app.models.sql.User import User
 from app.services.user_service import user_service
 
 user_router = APIRouter(prefix="/user", tags=["user"])

@@ -1,13 +1,15 @@
-from datetime import timedelta, timezone,datetime
+from datetime import timedelta, timezone, datetime
 from typing import Annotated, Any
+
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
+
 from app.core.config import settings
 from app.middleware.logging import logger
-from app.models.sql.user import User
+from app.models.sql.User import User
 
 # 解决bcrypt版本兼容性问题
 try:
