@@ -8,6 +8,7 @@ class Book(SQLModel ,table=True):
     id: int = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     author: str = Field(index=True)
+    cover: str = Field(default="")
     description: str = Field(
         default="",
         sa_column=Column(Text)

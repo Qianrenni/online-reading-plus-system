@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     # 分表
     BOOK_SHARD_COUNT: int = 64
 
+    #  书籍缓存
+    BOOK_CACHE_EXPIRE: int =  60 * 60 * 24 * 7
     class Config:
         env_file = ".env"
         case_sensitive = True

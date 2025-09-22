@@ -36,14 +36,13 @@ def batch_upload_books(folder_path):
             try:
                 if file.lower().endswith('.epub'):
                     epub_path = os.path.join(root, file)
-                    # print(f"Processing: {epub_path}")
+                    print(f"Processing: {epub_path}")
 
                     # 提取元数据
                     metadata = extract_epub_metadata(epub_path)
                     if not metadata:
                         print(f"Failed to extract metadata for: {epub_path}")
                         continue
-
                     # 创建唯一目录存储书籍文件
 
                     # os.makedirs(book_folder, exist_ok=True)
@@ -74,7 +73,7 @@ def batch_upload_books(folder_path):
                     init_order = 1.0
                     for title, content in catalog:
                         # 确保 content 不超过数据库限制
-                        cursor.execute("update book_chapter set title  = %s where book_id = %s and sort_order = %s", (title, book_id, init_order))
+                        cursor.execute(f"insert into book_chapter(book_id,sort_order,title,content,created_at) values (%s,%s,%s,%s,now())", (book_id, init_order, title, content))
                         init_order += 10
                     cursor.connection.commit()
 
