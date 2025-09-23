@@ -1,4 +1,5 @@
 from datetime import timedelta, timezone, datetime
+from time import time
 from typing import Annotated, Any
 
 import jwt
@@ -43,7 +44,7 @@ def get_password_hash(password:str):
     """
     return pwd_context.hash(password)
 
-def create_access_token(data: dict[str,Any], expires_delta: timedelta | None = None):
+def create_access_token(data: dict[str,Any], expires_delta: int | None = None):
     """
     创建访问令牌
     Args:
@@ -54,9 +55,10 @@ def create_access_token(data: dict[str,Any], expires_delta: timedelta | None = N
     """
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        # 时间戳
+        expire = time() +expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = time()+ settings.ACCESS_TOKEN_EXPIRE
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
@@ -79,7 +81,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user: str = payload.get("sub")
+        expire = payload.get("exp")
         if not user:
+            raise credentials_exception
+        if not expire or  expire < time():
+            credentials_exception.detail = "Token expired"
             raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
@@ -87,16 +93,3 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     # 这里应该从数据库获取用户
     # 简化处理，直接返回用户名
     return user
-
-
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    """
-    判断用户是否激活，如果未激活则抛出HTTP 400异常
-    :param current_user:  当前用户
-    :return:    当前用户
-    """
-    if current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user

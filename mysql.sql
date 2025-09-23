@@ -6,7 +6,7 @@
 create database  if not exists reading_plus;
 
 select t.title,t.sort_order from reading_plus.book_chapter as t
-where  t.book_id =1
+where  t.book_id =1;
 
 select * from (
     SELECT
@@ -15,10 +15,12 @@ select * from (
 FROM reading_plus.book_chapter
 WHERE book_id = 1
  ) as cr
-where cr.rn =1
+where cr.rn =1;
 
 SELECT content,title
 FROM reading_plus.book_chapter
 WHERE book_id = 1
 ORDER BY sort_order
 LIMIT 1 OFFSET 2;
+
+select count(id) from reading_plus.book_chapter

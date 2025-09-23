@@ -1,0 +1,13 @@
+@BASE_URL = http://localhost:8000
+@Token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDkyMTc2NTkxQHFxLmNvbSIsImV4cCI6MTc1ODY0OTg5Ny42OTUxNjV9.KBg0g1SHrn6seaWtEguYlusc2zOgpxfozSMj6Sq_zls
+###
+GET {{BASE_URL}}/book/chapter/1
+Accept: application/json
+Authorization: {{Token}}
+
+###
+@book_id =1
+@chapter_index = 1
+GET {{BASE_URL}}/book/chapter/{{book_id}}/{{chapter_index}}
+Accept: application/json
+Authorization:  {{Token}}

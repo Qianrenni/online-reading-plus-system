@@ -90,6 +90,8 @@ class UserService:
         user = result.first()
         if not user:
             raise ValueError("用户名或密码无效")
+        if not user.is_active:
+            raise ValueError("用户未激活")
         if verify_password(password, user.password):
             return user
         else:

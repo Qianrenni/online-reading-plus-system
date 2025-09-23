@@ -55,7 +55,6 @@ class BookService:
 
     @staticmethod
     async def get_book_chapter_by_id(
-            book_id: int,
             chapter_id: int,
             database: DataBaseSessionDepency
     ) -> str:
@@ -69,5 +68,23 @@ class BookService:
         statement =select(BookChapter.content).where(BookChapter.id  == chapter_id)
         result = await database.exec(statement)
         chapter = result.one()
-        return chapter.content
+        return chapter
+
+    @staticmethod
+    async def get_book_chapter_by_index(
+            book_id: int,
+            chapter_index: int,
+            database: DataBaseSessionDepency,
+            ) -> str:
+        """
+        获取图书章节内容
+        :param book_id:        图书ID
+        :param chapter_index:     章节索引
+        :param database:             数据库会话
+        :return:             章节内容
+        """
+        statement = select(BookChapter.content).order_by(BookChapter.sort_order).limit(1).offset(chapter_index)
+        result = await database.exec(statement)
+        chapter = result.one()
+        return chapter
 book_service = BookService()
