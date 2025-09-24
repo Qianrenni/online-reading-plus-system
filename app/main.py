@@ -7,6 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1 import user_router
 from app.api.v1.book import book_router
+from app.api.v1.shelf import shelf_router
 from app.api.v1.token import token_router
 from app.core.database import create_database_and_tables
 from app.middleware.logging import logger
@@ -62,3 +63,5 @@ app.include_router(token_router)
 app.include_router(user_router)
 
 app.include_router(book_router)
+
+app.include_router(shelf_router)

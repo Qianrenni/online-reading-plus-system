@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.database import DataBaseSessionDepency
+from app.models.response_model import ResponseModel
 from app.models.sql.User import User
 from app.services.user_service import user_service
 
@@ -33,7 +34,7 @@ class UserRegister(BaseModel):
             raise ValueError('密码长度至少为6个字符')
         return password
 
-@user_router.post('/register', response_model=User)
+@user_router.post('/register',status_code=status.HTTP_201_CREATED)
 async def register(user: Annotated[UserRegister, Body()],database: DataBaseSessionDepency):
     """
     用户注册接口
@@ -46,14 +47,14 @@ async def register(user: Annotated[UserRegister, Body()],database: DataBaseSessi
     返回创建的用户信息
     """
     try:
-        db_user = await user_service.create_user(
+        await user_service.create_user(
             db=database,
             username=user.username,
             email=user.email,
             password=user.password,
             avatar=user.avatar
         )
-        return db_user
+        return
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -70,7 +71,7 @@ class UserPasswordUpdate(BaseModel):
     username: str
     old_password: str
     new_password: str
-@user_router.patch('/update-password')
+@user_router.patch('/update-password',status_code=status.HTTP_204_NO_CONTENT)
 async def update_user(user: Annotated[UserPasswordUpdate, Body()], database: DataBaseSessionDepency):
     """
     更新用户密码
@@ -89,7 +90,7 @@ async def update_user(user: Annotated[UserPasswordUpdate, Body()], database: Dat
             new_password=user.new_password,
         )
         if  result == True:
-            return {"message":"密码修改成功"}
+            return
     except ValueError  as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

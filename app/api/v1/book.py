@@ -1,27 +1,30 @@
+
 from fastapi import APIRouter, Path
 from fastapi.params import Depends
 
 from app.core.config import settings
 from app.core.database import DataBaseSessionDepency
 from app.core.security import get_current_user
+from app.models.response_model import ResponseModel
 from app.models.sql import Book
 from app.services.book_service import book_service
 from app.services.cache_service import cache
 
 book_router  = APIRouter(prefix="/book", tags=["book"])
 
-@book_router.get("/category")
+@book_router.get("/category",response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
-async def get_book_category(database: DataBaseSessionDepency)-> list[str]:
+async def get_book_category(database: DataBaseSessionDepency):
     """
     获取图书分类
     :param database:    数据库会话
     :return:    分类列表
     """
-    return await book_service.get_category(database=database)
+    result = await book_service.get_category(database=database)
+    return ResponseModel(data =  result)
 
 
-@book_router.get("/{book_id}",response_model=Book)
+@book_router.get("/{book_id}",response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async def get_book(
         database: DataBaseSessionDepency
@@ -32,9 +35,10 @@ async def get_book(
     :param book_id:       图书ID
     :return:      图书信息
     """
-    return await  book_service.get_book_by_id(book_id=book_id, database=database)
+    result  = await  book_service.get_book_by_id(book_id=book_id, database=database)
+    return  ResponseModel(data = result)
 
-@book_router.get("/toc/{book_id}")
+@book_router.get("/toc/{book_id}",response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async def get_book_toc(
         database: DataBaseSessionDepency
@@ -45,22 +49,24 @@ async def get_book_toc(
     :param book_id:         图书ID
     :return:         图书目录
     """
-    return await book_service.get_book_toc_by_id(book_id=book_id, database=database)
+    result = await book_service.get_book_toc_by_id(book_id=book_id, database=database)
+    return    ResponseModel(data = result)
 
-@book_router.get("/chapter/{id}", dependencies=[Depends(get_current_user)])
+@book_router.get("/chapter/{id}", dependencies=[Depends(get_current_user)],response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async def get_book_chapter(
         database: DataBaseSessionDepency
-        ,id: int = Path(..., title="id", description="id", gt=0))-> str:
+        ,id: int = Path(..., title="id", description="id", gt=0)):
     """
     获取图书章节
     :param database:        数据库会话
     :param id:         ID
     :return:           章节内容
     """
-    return await book_service.get_book_chapter_by_id(chapter_id=id, database=database)
+    result = await book_service.get_book_chapter_by_id(chapter_id=id, database=database)
+    return   ResponseModel(data = result)
 
-@book_router.get("/chapter/{book_id}/{chapter_index}",dependencies=[Depends(get_current_user)])
+@book_router.get("/chapter/{book_id}/{chapter_index}",dependencies=[Depends(get_current_user)],response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async  def get_book_chapter_by_index(
         database: DataBaseSessionDepency,
@@ -73,5 +79,6 @@ async  def get_book_chapter_by_index(
     :param chapter_index:         章节索引
     :return:                  章节内容
     """
-    return await book_service.get_book_chapter_by_index(book_id=book_id, chapter_index=chapter_index, database=database)
+    result= await book_service.get_book_chapter_by_index(book_id=book_id, chapter_index=chapter_index, database=database)
+    return    ResponseModel(data = result)
 

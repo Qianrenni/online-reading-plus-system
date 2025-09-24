@@ -68,7 +68,7 @@ class BookService:
         statement =select(BookChapter.content).where(BookChapter.id  == chapter_id)
         result = await database.exec(statement)
         chapter = result.one()
-        return chapter
+        return str(chapter)
 
     @staticmethod
     async def get_book_chapter_by_index(
@@ -86,5 +86,5 @@ class BookService:
         statement = select(BookChapter.content).order_by(BookChapter.sort_order).limit(1).offset(chapter_index)
         result = await database.exec(statement)
         chapter = result.one()
-        return chapter
+        return str(chapter)
 book_service = BookService()

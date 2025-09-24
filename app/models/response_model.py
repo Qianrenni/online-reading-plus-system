@@ -6,5 +6,5 @@ class ResponseModel(BaseModel):
     响应模型
     """
     code: int = 0
-    msg: str =  ""
+    message: str = ""
     data: object = None

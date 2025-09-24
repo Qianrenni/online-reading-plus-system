@@ -9,7 +9,13 @@ from app.core.database import redis_pool
 from app.middleware.logging import logger
 
 
-def cache(expire: int = 300, ignore_null: bool = True, exclude_args: List[int] = None, exclude_kwargs: List[str] = None):
+def cache(
+        expire: int = 300,
+        ignore_null: bool = True,
+        exclude_args: List[int] = None,
+        exclude_kwargs: List[str] = None,
+        key_prefix: str = None
+    ):
     """
     缓存装饰器
     :param expire: 过期时间（秒）
@@ -39,7 +45,10 @@ def cache(expire: int = 300, ignore_null: bool = True, exclude_args: List[int] =
                 }, sort_keys=True, default=str)
 
                 key_hash = hashlib.md5(serialized.encode()).hexdigest()
-                key = f"cache:{func.__module__}.{func.__name__}:{key_hash}"
+                if  key_prefix:
+                    key = f"{key_prefix}:{key_hash}"
+                else:
+                    key = f"cache:{func.__module__}.{func.__name__}:{key_hash}"
 
             except Exception as e:
                 logger.error(f"Cache key generation failed: {e}")

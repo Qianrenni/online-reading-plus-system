@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta, timezone, datetime
 from time import time
 from typing import Annotated, Any
@@ -80,14 +81,16 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user: str = payload.get("sub")
+        user = json.loads(payload.get("sub"))
         expire = payload.get("exp")
         if not user:
             raise credentials_exception
         if not expire or  expire < time():
             credentials_exception.detail = "Token expired"
             raise credentials_exception
-    except InvalidTokenError:
+    except InvalidTokenError as e:
+        logger.error(f"Invalid token: {e}")
+        credentials_exception.detail = f"Invalid token: {e}"
         raise credentials_exception
     
     # 这里应该从数据库获取用户
