@@ -1,16 +1,20 @@
-from pandas.core.computation.expressions import where
-from sqlmodel import select
+import asyncio
 
-from app.core.database import DataBaseSessionDepency
+from sqlalchemy.exc import NoResultFound
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.core.config import settings
 from app.models.sql import BookChapter
 from app.models.sql.Book import Book
+from app.services.cache_service import cache, cache_get, cache_set
 
 
 class BookService:
 
     @staticmethod
     async def get_category(
-            database: DataBaseSessionDepency
+            database: AsyncSession
     ) -> list[str]:
         """
         获取图书分类
@@ -19,28 +23,72 @@ class BookService:
         statement = select(Book.category).distinct()
         result = await database.exec(statement)
         categories = result.all()
-        return [category for category in categories]
+        return [str(category) for category in categories]
 
     @staticmethod
+    @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"],key_prefix="get_book_by_id")
     async def get_book_by_id(
             book_id: int,
-            database: DataBaseSessionDepency
-    ) -> Book:
+            database: AsyncSession
+    ) -> Book|None:
         """
         获取图书信息
         :param book_id: 图书ID
         :param database:    数据库会话
         :return:    图书信息
         """
-        statement = select(Book).where(Book.id == book_id)
-        result = await database.exec(statement)
-        book = result.one()
-        return book
+        try:
+            statement = select(Book).where(Book.id == book_id)
+            result = await database.exec(statement)
+            return result.one()
+        except NoResultFound:
+            return None  # 返回 None
+
+    @staticmethod
+    async def get_book_by_list(
+        book_ids: list[int],
+        database: AsyncSession
+    ) -> list[Book]:
+        """
+        获取图书信息
+        :param book_ids:  图书ID列表
+        :param database:        数据库会话
+        :return:         图书信息
+        """
+        if not book_ids:
+            return []
+        miss_book_ids = []
+        book_list = []
+        for book_id in book_ids:
+            try:
+                result = await cache_get(
+                    args=[],
+                    kwargs={"book_id": book_id},
+                    key_prefix="get_book_by_id"
+                )
+                if result:
+                    book_list.append(result)
+                else:
+                    miss_book_ids.append(book_id)
+            except Exception as e:
+                raise ValueError(f"获取图书信息失败{str(e)}")
+        if miss_book_ids:
+            statement = select(Book).where(Book.id.in_(miss_book_ids))
+            result = await database.exec(statement)
+            tasks =  [cache_set(
+                                args=[],
+                                kwargs={"book_id": book.id},
+                                key_prefix="get_book_by_id",
+                                value=book
+                        )  for book in result.all()]
+            await asyncio.gather(*tasks)
+            book_list.extend(result.all())
+        return  book_list
 
     @staticmethod
     async def get_book_toc_by_id(
             book_id: int,
-            database: DataBaseSessionDepency
+            database: AsyncSession
     ) :
         """
         获取图书目录
@@ -56,7 +104,7 @@ class BookService:
     @staticmethod
     async def get_book_chapter_by_id(
             chapter_id: int,
-            database: DataBaseSessionDepency
+            database: AsyncSession
     ) -> str:
         """
         获取图书章节内容
@@ -74,7 +122,7 @@ class BookService:
     async def get_book_chapter_by_index(
             book_id: int,
             chapter_index: int,
-            database: DataBaseSessionDepency,
+            database: AsyncSession,
             ) -> str:
         """
         获取图书章节内容

@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE: int = 30 *  60
+    # TOKEN_有效期
+    ACCESS_TOKEN_EXPIRE: int =7 * 24 * 60 *  60
 
     # 分表
     BOOK_SHARD_COUNT: int = 64

@@ -45,6 +45,3 @@ async def create_database_and_tables():
 async def get_session():
     async with AsyncSession(engine) as session:
         yield session
-
-
-DataBaseSessionDepency = Annotated[AsyncSession, Depends(get_session)]

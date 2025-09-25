@@ -1,12 +1,11 @@
 import re
 from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status, Depends
 from pydantic import BaseModel, Field, field_validator
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.database import DataBaseSessionDepency
-from app.models.response_model import ResponseModel
-from app.models.sql.User import User
+from app.core.database import get_session
 from app.services.user_service import user_service
 
 user_router = APIRouter(prefix="/user", tags=["user"])
@@ -35,7 +34,10 @@ class UserRegister(BaseModel):
         return password
 
 @user_router.post('/register',status_code=status.HTTP_201_CREATED)
-async def register(user: Annotated[UserRegister, Body()],database: DataBaseSessionDepency):
+async def register(
+        user: Annotated[UserRegister, Body()],
+        database: Annotated[AsyncSession, Depends(get_session)]
+):
     """
     用户注册接口
     
@@ -72,7 +74,10 @@ class UserPasswordUpdate(BaseModel):
     old_password: str
     new_password: str
 @user_router.patch('/update-password',status_code=status.HTTP_204_NO_CONTENT)
-async def update_user(user: Annotated[UserPasswordUpdate, Body()], database: DataBaseSessionDepency):
+async def update_user(
+        user: Annotated[UserPasswordUpdate, Body()],
+        database: Annotated[AsyncSession, Depends(get_session)]
+):
     """
     更新用户密码
     

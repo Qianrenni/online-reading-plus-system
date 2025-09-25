@@ -1,7 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.database import DataBaseSessionDepency
 from app.core.security import get_password_hash, verify_password
 from app.models.sql.User import User
 
@@ -13,7 +13,7 @@ class UserService:
 
     @staticmethod
     async def create_user(
-        db: DataBaseSessionDepency,
+        db: AsyncSession,
         username: str,
         email: str,
         password: str,
@@ -67,7 +67,7 @@ class UserService:
             
     @staticmethod
     async def authenticate_user(
-        db: DataBaseSessionDepency,
+        db: AsyncSession,
         user_email: str,
         password: str
     ) -> User|None:
@@ -95,12 +95,12 @@ class UserService:
         if verify_password(password, user.password):
             return user
         else:
-            raise ValueError("用户名或密码无效")
+            raise ValueError("密码无效")
 
 
     @staticmethod
     async def update_password(
-        db: DataBaseSessionDepency,
+        db: AsyncSession,
         user_email: str,
         old_password: str,
         new_password: str

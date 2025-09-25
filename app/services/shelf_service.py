@@ -1,6 +1,6 @@
-from sqlmodel import select,insert
+from sqlmodel import select,delete
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.database import DataBaseSessionDepency
 from app.models.sql import Shelf
 
 
@@ -9,7 +9,7 @@ class ShelfService:
     @staticmethod
     async  def get_shelf(
             user_id: int,
-            database: DataBaseSessionDepency
+            database: AsyncSession
     ):
         """
         获取用户书架
@@ -26,7 +26,7 @@ class ShelfService:
     async def add_shelf(
             book_id: int,
             user_id: int,
-            database: DataBaseSessionDepency
+            database: AsyncSession
     ):
         """
         添加图书到书架
@@ -42,4 +42,27 @@ class ShelfService:
             return True
         except Exception as e:
             raise  Exception("添加失败",e)
+
+
+    @staticmethod
+    async def delete_shelf(
+            book_id: int,
+            user_id: int,
+            database: AsyncSession
+    ):
+        """
+        删除书架上的图书
+        :param book_id:  图书ID
+        :param user_id:      用户ID
+        :param database:        数据库会话
+        :return:              删除结果
+        """
+        try:
+            database.begin()
+            statement = delete(Shelf).where(Shelf.book_id == book_id, Shelf.user_id == user_id)
+            await database.exec(statement)
+            await database.commit()
+            return True
+        except Exception as e:
+            raise  Exception(f"删除失败 {str(e)}")
 shelf_service = ShelfService()

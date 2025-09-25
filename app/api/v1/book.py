@@ -1,12 +1,15 @@
 
 from fastapi import APIRouter, Path
-from fastapi.params import Depends
+from fastapi.params import Depends, Query
+from typing import Annotated
+
+from pydantic import Field
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
-from app.core.database import DataBaseSessionDepency
+from app.core.database import get_session
 from app.core.security import get_current_user
 from app.models.response_model import ResponseModel
-from app.models.sql import Book
 from app.services.book_service import book_service
 from app.services.cache_service import cache
 
@@ -14,7 +17,9 @@ book_router  = APIRouter(prefix="/book", tags=["book"])
 
 @book_router.get("/category",response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
-async def get_book_category(database: DataBaseSessionDepency):
+async def get_book_category(
+        database:Annotated[AsyncSession, Depends(get_session)]
+):
     """
     获取图书分类
     :param database:    数据库会话
@@ -22,12 +27,28 @@ async def get_book_category(database: DataBaseSessionDepency):
     """
     result = await book_service.get_category(database=database)
     return ResponseModel(data =  result)
+@book_router.get("/list",response_model=ResponseModel)
+async def get_book_list(
+        book_ids:  Annotated[
+                    list[Annotated[int,Field(gt=0)]],
+                    Query(
+                        title="book_ids",
+                        description="List of book IDs to fetch",
+                    )],
+        database: Annotated[AsyncSession, Depends(get_session)]
 
+    ):
+    """
+    获取图书信息
+    :param book_ids:      图书ID列表
+    :return:             图书信息列表
+    """
+    result = await book_service.get_book_by_list(book_ids=book_ids, database=database)
+    return ResponseModel(data=result)
 
 @book_router.get("/{book_id}",response_model=ResponseModel)
-@cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async def get_book(
-        database: DataBaseSessionDepency
+        database: Annotated[AsyncSession, Depends(get_session)]
         ,book_id: int = Path(..., title="book_id", description="book_id", gt=0)):
     """
     获取图书信息
@@ -38,10 +59,11 @@ async def get_book(
     result  = await  book_service.get_book_by_id(book_id=book_id, database=database)
     return  ResponseModel(data = result)
 
+
 @book_router.get("/toc/{book_id}",response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async def get_book_toc(
-        database: DataBaseSessionDepency
+        database: Annotated[AsyncSession, Depends(get_session)]
         ,book_id: int = Path(..., title="book_id", description="book_id", gt=0)):
     """
     获取图书目录
@@ -55,7 +77,7 @@ async def get_book_toc(
 @book_router.get("/chapter/{id}", dependencies=[Depends(get_current_user)],response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async def get_book_chapter(
-        database: DataBaseSessionDepency
+        database: Annotated[AsyncSession, Depends(get_session)]
         ,id: int = Path(..., title="id", description="id", gt=0)):
     """
     获取图书章节
@@ -69,7 +91,7 @@ async def get_book_chapter(
 @book_router.get("/chapter/{book_id}/{chapter_index}",dependencies=[Depends(get_current_user)],response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async  def get_book_chapter_by_index(
-        database: DataBaseSessionDepency,
+        database: Annotated[AsyncSession, Depends(get_session)],
         book_id: int = Path(..., title="book_id", description="book_id", gt=0),
         chapter_index: int = Path(..., title="chapter_index", description="chapter_index", gt=-1)):
     """
