@@ -15,6 +15,19 @@ from app.services.cache_service import cache
 
 book_router  = APIRouter(prefix="/book", tags=["book"])
 
+@book_router.get("/total",response_model=ResponseModel)
+@cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
+async  def get_books_total_count(
+        database: Annotated[AsyncSession, Depends(get_session)],
+        ):
+    """
+    获取图书总数
+    :param database:         数据库会话
+    :return:                   图书总数
+    """
+    result = await book_service.get_books_total_count(database=database)
+    return ResponseModel(data = {"total":result})
+
 @book_router.get("/category",response_model=ResponseModel)
 @cache(expire=settings.BOOK_CACHE_EXPIRE,exclude_kwargs=["database"])
 async def get_book_category(

@@ -1,7 +1,4 @@
 # app/core/database.py
-from typing import Annotated
-
-from fastapi import Depends
 from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel

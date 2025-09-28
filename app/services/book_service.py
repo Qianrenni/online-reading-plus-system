@@ -1,6 +1,7 @@
 import asyncio
 
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.sql.functions import count
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -40,7 +41,9 @@ class BookService:
         try:
             statement = select(Book).where(Book.id == book_id)
             result = await database.exec(statement)
-            return result.one()
+            book = result.one()
+            book.cover =  f"{settings.SERVER_URL}/static/book/{book.id}/{book.cover}"
+            return book
         except NoResultFound:
             return None  # 返回 None
 
@@ -135,4 +138,17 @@ class BookService:
         result = await database.exec(statement)
         chapter = result.one()
         return str(chapter)
+
+    @staticmethod
+    async def get_books_total_count(
+            database: AsyncSession,
+    )->int:
+        """
+        获取图书总数
+        :param database:      数据库会话
+        :return:              图书总数
+        """
+        statement = select(count(Book.id))
+        result =  await database.exec(statement)
+        return result.one()
 book_service = BookService()

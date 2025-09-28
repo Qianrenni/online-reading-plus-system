@@ -4,18 +4,19 @@ import asyncio
 import functools
 import hashlib
 import json
-from typing import Any, Callable, List, Optional, Union, Dict, Tuple
+import uuid
+from typing import Any, Callable, List, Optional, Dict, Tuple
 
 from app.core.database import redis_pool
 from app.middleware.logging import logger
 
 
 def generate_cache_key(
-        args: List[Any],
-        kwargs: Dict[str, Any],
-        exclude_args: List[int] = None,
-        exclude_kwargs: List[str] = None,
-        key_prefix: str = None,
+    args: List[Any],
+    kwargs: Dict[str, Any],
+    exclude_args: List[int] = None,
+    exclude_kwargs: List[str] = None,
+    key_prefix: str = None,
 ) -> str:
     """
     统一生成缓存 key 的函数
@@ -26,31 +27,55 @@ def generate_cache_key(
     filtered_args = [arg for i, arg in enumerate(args) if i not in exclude_args]
     filtered_kwargs = {k: v for k, v in kwargs.items() if k not in exclude_kwargs}
 
-    serialized = json.dumps({
-        "args": filtered_args,
-        "kwargs": filtered_kwargs
-    }, sort_keys=True, default=str)
+    serialized = json.dumps(
+        {"args": filtered_args, "kwargs": filtered_kwargs},
+        sort_keys=True,
+        default=str,
+    )
 
     key_hash = hashlib.md5(serialized.encode()).hexdigest()
     return f"{key_prefix}:{key_hash}"
 
 
+async def _renew_lock(lock_key: str, lock_value: str, lock_timeout: int, interval: float = None):
+    """
+    后台任务：定期续期分布式锁
+    """
+    interval = interval or max(1, lock_timeout // 3)  # 至少1秒，避免过于频繁
+    while True:
+        try:
+            # 使用 Lua 脚本安全续期：仅当锁仍属于当前持有者时才延长
+            lua_script = """
+            if redis.call("get", KEYS[1]) == ARGV[1] then
+                return redis.call("expire", KEYS[1], ARGV[2])
+            else
+                return 0
+            end
+            """
+            await redis_pool.eval(lua_script, 1, lock_key, lock_value, lock_timeout)
+            logger.debug(f"Lock renewed: {lock_key}")
+        except Exception as e:
+            logger.warning(f"Failed to renew lock {lock_key}: {e}")
+            break
+        await asyncio.sleep(interval)
+
+
 async def cache_get(
-        args: List[Any],
-        kwargs: Dict[str, Any],
-        *,
-        expire: int = 300,
-        ignore_null: bool = True,
-        exclude_args: List[int] = None,
-        exclude_kwargs: List[str] = None,
-        key_prefix: str = None,
-        lock_timeout: int = 10,
-        fallback_func: Optional[Callable] = None,  # 回源函数：async def fallback() -> Any
-        fallback_args: Tuple = (),
-        fallback_kwargs: Dict = None
+    args: List[Any],
+    kwargs: Dict[str, Any],
+    *,
+    expire: int = 300,
+    ignore_null: bool = True,
+    exclude_args: List[int] = None,
+    exclude_kwargs: List[str] = None,
+    key_prefix: str = None,
+    lock_timeout: int = 10,
+    fallback_func: Optional[Callable] = None,
+    fallback_args: Tuple = (),
+    fallback_kwargs: Dict = None,
 ) -> Any:
     """
-    手动获取缓存，支持回源（带分布式锁）
+    手动获取缓存，支持回源（带分布式锁 + 自动续期）
 
     :param args: 用于生成 key 的位置参数
     :param kwargs: 用于生成 key 的关键字参数
@@ -68,10 +93,10 @@ async def cache_get(
     try:
         cached = await redis_pool.get(cache_key)
         if cached is not None:
-            logger.info(f"Cache hit : {cache_key}")
+            logger.info(f"Cache hit: {cache_key}")
             return json.loads(cached)
     except Exception as e:
-        logger.error(f"Cache read failed : {e}")
+        logger.error(f"Cache read failed: {e}")
 
     # 2. 如果没有 fallback_func，直接返回 None
     if fallback_func is None:
@@ -79,64 +104,104 @@ async def cache_get(
 
     # 3. 有 fallback_func：尝试加锁回源
     lock_acquired = False
+    lock_value = str(uuid.uuid4())
+    renew_task = None
+
     try:
-        lock_acquired = await redis_pool.set(lock_key, "1", ex=lock_timeout, nx=True)
+        # 尝试获取锁（带唯一值）
+        lock_acquired = await redis_pool.set(lock_key, lock_value, ex=lock_timeout, nx=True)
 
         if lock_acquired:
+            # 启动锁续期任务
+            renew_task = asyncio.create_task(
+                _renew_lock(lock_key, lock_value, lock_timeout)
+            )
+
             # 双重检查：可能在加锁前已被写入
             cached = await redis_pool.get(cache_key)
             if cached is not None:
                 return json.loads(cached)
 
-            # 执行回源
+            # 执行回源逻辑
             result = await fallback_func(*fallback_args, **fallback_kwargs)
 
             # 决定是否缓存
-            should_cache = not (ignore_null and (result is None or result == {} or result == []))
+            should_cache = not (
+                ignore_null and (result is None or result == {} or result == [])
+            )
             if should_cache:
-                await redis_pool.setex(cache_key, expire, json.dumps(result, default=str))
-                logger.info(f"Cache set : {cache_key} (expire={expire}s)")
+                await redis_pool.setex(
+                    cache_key, expire, json.dumps(result, default=str)
+                )
+                logger.info(f"Cache set: {cache_key} (expire={expire}s)")
 
             return result
         else:
-            # 未获取到锁：等待后重试读缓存
-            await asyncio.sleep(0.05)
-            cached = await redis_pool.get(cache_key)
-            if cached is not None:
-                return json.loads(cached)
-            else:
-                # 极端情况：自己执行 fallback（可选，或抛异常）
-                logger.warning(f"Lock holder may have failed, executing fallback directly: {cache_key}")
-                return await fallback_func(*fallback_args, **fallback_kwargs)
+            # 未获取到锁：循环等待缓存被写入
+            start_time = asyncio.get_event_loop().time()
+            max_wait = lock_timeout + 1  # 略大于锁超时，防误判
+
+            while asyncio.get_event_loop().time() - start_time < max_wait:
+                await asyncio.sleep(0.05)
+                cached = await redis_pool.get(cache_key)
+                if cached is not None:
+                    logger.info(f"Cache filled by another worker: {cache_key}")
+                    return json.loads(cached)
+
+            # 超时仍未命中，认为锁持有者失败，自己回源
+            logger.warning(
+                f"Cache still empty after {max_wait}s, "
+                f"executing fallback directly: {cache_key}"
+            )
+            return await fallback_func(*fallback_args, **fallback_kwargs)
 
     except Exception as e:
         logger.error(f"Error in cache_get fallback: {e}")
         raise
+
     finally:
+        # 停止锁续期任务
+        if renew_task and not renew_task.done():
+            renew_task.cancel()
+            try:
+                await renew_task
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                logger.warning(f"Error while cancelling lock renewal: {e}")
+
+        # 安全释放锁（仅删除属于自己的锁）
         if lock_acquired:
             try:
-                await redis_pool.delete(lock_key)
+                lua_script = """
+                if redis.call("get", KEYS[1]) == ARGV[1] then
+                    return redis.call("del", KEYS[1])
+                else
+                    return 0
+                end
+                """
+                await redis_pool.eval(lua_script, 1, lock_key, lock_value)
             except Exception as e:
                 logger.warning(f"Failed to release lock {lock_key}: {e}")
 
 
 async def cache_set(
-        args: List[Any],
-        kwargs: Dict[str, Any],
-        value: Any,
-        *,
-        expire: int = 300,
-        ignore_null: bool = True,
-        exclude_args: List[int] = None,
-        exclude_kwargs: List[str] = None,
-        key_prefix: str =  None
+    args: List[Any],
+    kwargs: Dict[str, Any],
+    value: Any,
+    *,
+    expire: int = 300,
+    ignore_null: bool = True,
+    exclude_args: List[int] = None,
+    exclude_kwargs: List[str] = None,
+    key_prefix: str = None,
 ) -> bool:
     """
     手动设置缓存
     """
-    if key_prefix is None or  key_prefix == "":
+    if key_prefix is None or key_prefix == "":
         raise ValueError("key_prefix must be set")
-    if  ignore_null and (value is None or value == {} or value == []):
+    if ignore_null and (value is None or value == {} or value == []):
         return False
 
     cache_key = generate_cache_key(
@@ -153,22 +218,15 @@ async def cache_set(
 
 
 async def cache_delete(
-        args: List[Any],
-        kwargs: Dict[str, Any],
-        *,
-        exclude_args: List[int] = None,
-        exclude_kwargs: List[str] = None,
-        key_prefix: str = None
+    args: List[Any],
+    kwargs: Dict[str, Any],
+    *,
+    exclude_args: List[int] = None,
+    exclude_kwargs: List[str] = None,
+    key_prefix: str = None,
 ) -> bool:
     """
     手动删除缓存项
-
-    :param args: 用于生成 key 的位置参数
-    :param kwargs: 用于生成 key 的关键字参数
-    :param exclude_args: 排除的位置参数索引
-    :param exclude_kwargs: 排除的关键字参数名
-    :param key_prefix: key 前缀（必须与写入时一致）
-    :return: 是否删除成功（Redis 删除不存在的 key 也会返回 1，所以这里只看是否抛异常）
     """
     if key_prefix is None or key_prefix == "":
         raise ValueError("key_prefix must be set")
@@ -178,7 +236,6 @@ async def cache_delete(
             args, kwargs, exclude_args, exclude_kwargs, key_prefix
         )
         result = await redis_pool.delete(cache_key)
-        # Redis delete 返回被删除的 key 数量（0 或 1）
         deleted = result > 0
         if deleted:
             logger.info(f"Cache deleted: {cache_key}")
@@ -189,13 +246,14 @@ async def cache_delete(
         logger.error(f"Cache delete failed: {e}")
         return False
 
+
 def cache(
-        expire: int = 300,
-        ignore_null: bool = True,
-        exclude_args: List[int] = None,
-        exclude_kwargs: List[str] = None,
-        key_prefix: str = None,
-        lock_timeout: int = 10
+    expire: int = 300,
+    ignore_null: bool = True,
+    exclude_args: List[int] = None,
+    exclude_kwargs: List[str] = None,
+    key_prefix: str = None,
+    lock_timeout: int = 10,
 ):
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
@@ -210,12 +268,13 @@ def cache(
                 ignore_null=ignore_null,
                 exclude_args=exclude_args,
                 exclude_kwargs=exclude_kwargs,
-                key_prefix=key_prefix if  key_prefix else func.__qualname__,
+                key_prefix=key_prefix if key_prefix else func.__qualname__,
                 lock_timeout=lock_timeout,
                 fallback_func=_fallback,
                 fallback_args=(),
-                fallback_kwargs={}
+                fallback_kwargs={},
             )
 
         return wrapper
+
     return decorator

@@ -21,7 +21,8 @@ class Settings(BaseSettings):
 
     #  书籍缓存
     BOOK_CACHE_EXPIRE: int =  60 * 60 * 24 * 7
-
+    # SERVER_URL
+    SERVER_URL: str = "http://127.0.0.1:8000"
     class Config:
         env_file = ".env"
         case_sensitive = True
