@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, HTTPException, status, Depends
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.core import wrap_error_handler_api
 from app.core.database import get_session
 from app.services.user_service import user_service
 
@@ -33,7 +34,9 @@ class UserRegister(BaseModel):
             raise ValueError('密码长度至少为6个字符')
         return password
 
-@user_router.post('/register',status_code=status.HTTP_201_CREATED)
+
+@user_router.post('/register', status_code=status.HTTP_201_CREATED)
+@wrap_error_handler_api()
 async def register(
         user: Annotated[UserRegister, Body()],
         database: Annotated[AsyncSession, Depends(get_session)]
@@ -63,6 +66,7 @@ async def register(
             detail=str(e)
         )
 
+
 class UserPasswordUpdate(BaseModel):
     """
     用户密码更新模型
@@ -73,7 +77,10 @@ class UserPasswordUpdate(BaseModel):
     username: str
     old_password: str
     new_password: str
-@user_router.patch('/update-password',status_code=status.HTTP_204_NO_CONTENT)
+
+
+@user_router.patch('/update-password', status_code=status.HTTP_204_NO_CONTENT)
+@wrap_error_handler_api()
 async def update_user(
         user: Annotated[UserPasswordUpdate, Body()],
         database: Annotated[AsyncSession, Depends(get_session)]
@@ -94,14 +101,10 @@ async def update_user(
             old_password=user.old_password,
             new_password=user.new_password,
         )
-        if  result == True:
+        if result == True:
             return
-    except ValueError  as e:
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-        
-
-    
-    

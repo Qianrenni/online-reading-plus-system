@@ -8,7 +8,7 @@ from sympy.physics.optics import Medium
 
 
 class BookChapter(SQLModel, table=True):
-    __tablename__ =  "book_chapter"
+    __tablename__ :str=  "book_chapter"
     id: Optional[int] = Field(default=None, primary_key=True)
     book_id: int = Field(foreign_key="book.id", index=True)
     title: str = Field(default="")

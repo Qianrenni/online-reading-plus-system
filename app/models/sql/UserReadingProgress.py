@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, Field
 
 class UserReadingProgress(SQLModel, table=True):
     """用户阅读进度"""
-    __tablename__ =  "user_reading_progress"
+    __tablename__:str =  "user_reading_progress"
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id", index=True)
     book_id: int = Field(foreign_key="book.id", index=True)

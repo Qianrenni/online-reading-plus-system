@@ -41,7 +41,7 @@ class BookService:
         try:
             statement = select(Book).where(Book.id == book_id)
             result = await database.exec(statement)
-            book = result.one()
+            book = result.one_or_none()
             book.cover =  f"{settings.SERVER_URL}/static/book/{book.id}/{book.cover}"
             return book
         except NoResultFound:
@@ -118,7 +118,7 @@ class BookService:
         """
         statement =select(BookChapter.content).where(BookChapter.id  == chapter_id)
         result = await database.exec(statement)
-        chapter = result.one()
+        chapter = result.one_or_none()
         return str(chapter)
 
     @staticmethod
@@ -136,7 +136,7 @@ class BookService:
         """
         statement = select(BookChapter.content).order_by(BookChapter.sort_order).limit(1).offset(chapter_index)
         result = await database.exec(statement)
-        chapter = result.one()
+        chapter = result.one_or_none()
         return str(chapter)
 
     @staticmethod
@@ -150,5 +150,5 @@ class BookService:
         """
         statement = select(count(Book.id))
         result =  await database.exec(statement)
-        return result.one()
+        return result.one_or_none()
 book_service = BookService()

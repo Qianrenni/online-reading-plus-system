@@ -5,18 +5,18 @@ import functools
 import hashlib
 import json
 import uuid
-from typing import Any, Callable, List, Optional, Dict, Tuple
+from typing import Callable,Any
 
 from app.core.database import redis_pool
 from app.middleware.logging import logger
 
 
 def generate_cache_key(
-    args: List[Any],
-    kwargs: Dict[str, Any],
-    exclude_args: List[int] = None,
-    exclude_kwargs: List[str] = None,
-    key_prefix: str = None,
+    args: list[Any],
+    kwargs: dict[str, Any],
+    exclude_args: list[int] | None= None,
+    exclude_kwargs: list[str] | None= None,
+    key_prefix: str | None= None,
 ) -> str:
     """
     统一生成缓存 key 的函数
@@ -37,7 +37,7 @@ def generate_cache_key(
     return f"{key_prefix}:{key_hash}"
 
 
-async def _renew_lock(lock_key: str, lock_value: str, lock_timeout: int, interval: float = None):
+async def _renew_lock(lock_key: str, lock_value: str, lock_timeout: int, interval: float | None= None):
     """
     后台任务：定期续期分布式锁
     """
@@ -52,7 +52,7 @@ async def _renew_lock(lock_key: str, lock_value: str, lock_timeout: int, interva
                 return 0
             end
             """
-            await redis_pool.eval(lua_script, 1, lock_key, lock_value, lock_timeout)
+            await redis_pool.eval(lua_script, 1, lock_key, lock_value, str(lock_timeout))
             logger.debug(f"Lock renewed: {lock_key}")
         except Exception as e:
             logger.warning(f"Failed to renew lock {lock_key}: {e}")
@@ -61,18 +61,18 @@ async def _renew_lock(lock_key: str, lock_value: str, lock_timeout: int, interva
 
 
 async def cache_get(
-    args: List[Any],
-    kwargs: Dict[str, Any],
+    args: list[Any],
+    kwargs: dict[str, Any],
     *,
     expire: int = 300,
     ignore_null: bool = True,
-    exclude_args: List[int] = None,
-    exclude_kwargs: List[str] = None,
-    key_prefix: str = None,
+    exclude_args: list[int] | None= None,
+    exclude_kwargs: list[str] | None= None,
+    key_prefix: str | None= None,
     lock_timeout: int = 10,
-    fallback_func: Optional[Callable] = None,
-    fallback_args: Tuple = (),
-    fallback_kwargs: Dict = None,
+    fallback_func: Callable[..., Any] | None = None,
+    fallback_args: tuple[Any, ...] = (),
+    fallback_kwargs: dict[str, Any] | None= None,
 ) -> Any:
     """
     手动获取缓存，支持回源（带分布式锁 + 自动续期）
@@ -186,15 +186,15 @@ async def cache_get(
 
 
 async def cache_set(
-    args: List[Any],
-    kwargs: Dict[str, Any],
+    args: list[Any],
+    kwargs: dict[str, Any],
     value: Any,
     *,
     expire: int = 300,
     ignore_null: bool = True,
-    exclude_args: List[int] = None,
-    exclude_kwargs: List[str] = None,
-    key_prefix: str = None,
+    exclude_args: list[int] | None = None,
+    exclude_kwargs: list[str] | None = None,
+    key_prefix: str | None  = None,
 ) -> bool:
     """
     手动设置缓存
@@ -218,12 +218,12 @@ async def cache_set(
 
 
 async def cache_delete(
-    args: List[Any],
-    kwargs: Dict[str, Any],
+    args: list[Any],
+    kwargs: dict[str, Any],
     *,
-    exclude_args: List[int] = None,
-    exclude_kwargs: List[str] = None,
-    key_prefix: str = None,
+    exclude_args: list[int] | None = None,
+    exclude_kwargs: list[str] | None = None,
+    key_prefix: str | None= None,
 ) -> bool:
     """
     手动删除缓存项
@@ -250,9 +250,9 @@ async def cache_delete(
 def cache(
     expire: int = 300,
     ignore_null: bool = True,
-    exclude_args: List[int] = None,
-    exclude_kwargs: List[str] = None,
-    key_prefix: str = None,
+    exclude_args: list[int] | None= None,
+    exclude_kwargs: list[str] | None = None,
+    key_prefix: str | None= None,
     lock_timeout: int = 10,
 ):
     def decorator(func: Callable) -> Callable:

@@ -23,7 +23,8 @@ except Exception as e:
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token/get")
 
-def verify_password(plain_password: str , hashed_password: str ):
+
+def verify_password(plain_password: str, hashed_password: str):
     """
     验证密码是否正确
     Args:
@@ -35,7 +36,7 @@ def verify_password(plain_password: str , hashed_password: str ):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def get_password_hash(password:str):
+def get_password_hash(password: str):
     """
     获取密码哈希值
     Args:
@@ -45,7 +46,8 @@ def get_password_hash(password:str):
     """
     return pwd_context.hash(password)
 
-def create_access_token(data: dict[str,Any], expires_delta: int | None = None):
+
+def create_access_token(data: dict[str, Any], expires_delta: int | None = None):
     """
     创建访问令牌
     Args:
@@ -57,9 +59,9 @@ def create_access_token(data: dict[str,Any], expires_delta: int | None = None):
     to_encode = data.copy()
     if expires_delta:
         # 时间戳
-        expire = time() +expires_delta
+        expire = time() + expires_delta
     else:
-        expire = time()+ settings.ACCESS_TOKEN_EXPIRE
+        expire = time() + settings.ACCESS_TOKEN_EXPIRE
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
@@ -85,14 +87,14 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         expire = payload.get("exp")
         if not user:
             raise credentials_exception
-        if not expire or  expire < time():
+        if not expire or expire < time():
             credentials_exception.detail = "Token expired"
             raise credentials_exception
     except InvalidTokenError as e:
         logger.error(f"Invalid token: {e}")
         credentials_exception.detail = f"Invalid token: {e}"
         raise credentials_exception
-    
+
     # 这里应该从数据库获取用户
     # 简化处理，直接返回用户名
     return user

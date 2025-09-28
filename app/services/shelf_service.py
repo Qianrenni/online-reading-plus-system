@@ -58,10 +58,13 @@ class ShelfService:
         :return:              删除结果
         """
         try:
-            database.begin()
-            statement = delete(Shelf).where(Shelf.book_id == book_id, Shelf.user_id == user_id)
-            await database.exec(statement)
-            await database.commit()
+            statement = select(Shelf).where(Shelf.book_id == book_id,Shelf.user_id == user_id)
+
+            result = await database.exec(statement)
+            shelf_item =  result.one_or_none()
+            if  shelf_item:
+                await database.delete(shelf_item)
+                await database.commit()
             return True
         except Exception as e:
             raise  Exception(f"删除失败 {str(e)}")

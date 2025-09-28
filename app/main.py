@@ -5,11 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.v1 import user_router
-from app.api.v1.book import book_router
-from app.api.v1.shelf import shelf_router
-from app.api.v1.token import token_router
-from app.core.database import create_database_and_tables
+from app.api import token_router, user_router, book_router, shelf_router, user_reading_progress_router
 from app.middleware.logging import logger
 # 在 main.py 中注册
 app = FastAPI(docs_url=None)
@@ -57,11 +53,13 @@ async def swagger_ui_redirect():
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-
+#  获取 token  路由
 app.include_router(token_router)
+# 用户相关
 app.include_router(user_router)
-
+# 书籍相关
 app.include_router(book_router)
-
+# 书架相关
 app.include_router(shelf_router)
+# 阅读历史相关
+app.include_router(user_reading_progress_router)
