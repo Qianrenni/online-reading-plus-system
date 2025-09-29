@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta, timezone, datetime
+from secrets import token_urlsafe
 from time import time
 from typing import Annotated, Any
 
@@ -11,7 +11,6 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 from app.middleware.logging import logger
-from app.models.sql.User import User
 
 # 解决bcrypt版本兼容性问题
 try:
@@ -98,3 +97,8 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     # 这里应该从数据库获取用户
     # 简化处理，直接返回用户名
     return user
+
+
+def create_refresh_token() -> str:
+    """生成一个安全的随机 refresh token"""
+    return token_urlsafe(64)  # 512-bit 随机字符串

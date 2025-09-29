@@ -20,3 +20,5 @@ def test_delete_book_from_shelf():
     """测试删除书架书籍"""
     response = requests.delete(f"{BASE_URL}/shelf/delete/1", headers=headers)
     assert response.status_code == 200
+
+

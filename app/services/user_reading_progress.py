@@ -19,7 +19,10 @@ class UserReadingProgressService:
         :param database: 数据库会话
         :return: 用户阅读进度
         """
-        statement = select(UserReadingProgress) \
+        statement = select(UserReadingProgress.book_id,
+                           UserReadingProgress.last_chapter_id,
+                           UserReadingProgress.last_read_at,
+                           UserReadingProgress.last_position) \
             .where(UserReadingProgress.user_id == user_id, UserReadingProgress.book_id == book_id)
 
         result = await database.exec(statement)
@@ -62,6 +65,7 @@ class UserReadingProgressService:
                 last_position=last_position,
                 last_read_at=datetime.now()
             )
+        # 获取用户书架
         try:
             database.add(reading_progress)
             await database.commit()
@@ -90,9 +94,9 @@ class UserReadingProgressService:
             reading_progress = result.one_or_none()
             if reading_progress:
 
-                    await database.delete(reading_progress)
-                    await database.commit()
-                    return True
+                await database.delete(reading_progress)
+                await database.commit()
+                return True
             else:
                 pass
             return True
@@ -112,7 +116,10 @@ class UserReadingProgressService:
         :param database: 数据库会话
         :return: 用户阅读进度
         """
-        statement = select(UserReadingProgress) \
+        statement = select(UserReadingProgress.book_id,
+                           UserReadingProgress.last_chapter_id,
+                           UserReadingProgress.last_read_at,
+                           UserReadingProgress.last_position) \
             .where(UserReadingProgress.user_id == user_id)
 
         result = await database.exec(statement)

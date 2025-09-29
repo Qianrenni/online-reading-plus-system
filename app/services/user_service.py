@@ -136,5 +136,5 @@ class UserService:
             return True
         except Exception as e:
             await db.rollback()
-            raise ValueError(f"密码更新失败: {str(e)}")
+            raise ValueError(f"密码更新失败: {str(e)}")     
 user_service = UserService()

@@ -25,7 +25,7 @@ class CustomException(Exception):
         :param media_type: 响应媒体类型,
         :param is_error  : 错误类型
         """
-        super().__init__(self.message)
+        super().__init__(message)
         self.status_code = status_code
         self.message = message
         self.headers = headers
