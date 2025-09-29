@@ -160,7 +160,7 @@ def is_allowed_domain(email: str) -> bool:
     return domain in allowed_domains
 
 
-@token_router.post('/verify_email', status_code=status.HTTP_204_NO_CONTENT)
+@token_router.post('/verify_email', status_code=status.HTTP_201_CREATED)
 @wrap_error_handler_api()
 async def verify_email(
         email: Annotated[str, Body(embed=True)],
@@ -176,10 +176,10 @@ async def verify_email(
     await cache_set(
         key_prefix=f"email_verify:{token}",
         value=email,
-        expire=5 * 60
+        expire=settings.EMAIL_VERIFY_EXPIRE
     )
 
-    verify_url = f"{settings.SERVER_URL}/verify_email?token={token}"
+    verify_url = f"{settings.SERVER_URL}/token/verify_email?token={token}"
 
     background_tasks.add_task(
         email_sender.send_email,
@@ -210,7 +210,7 @@ async def verify_email_callback(token: Annotated[str, Query()]):
     await cache_set(
         key_prefix=f"email_verified:{email}",  # 注意：key 包含邮箱
         value=True,  # 值可以是任意非空（如 "true"）
-        expire=5 * 60  # 必须 ≤ 验证 token 的有效期
+        expire=settings.EMAIL_VERIFY_EXPIRE  # 必须 ≤ 验证 token 的有效期
     )
     # 返回友好页面
     html_content = """

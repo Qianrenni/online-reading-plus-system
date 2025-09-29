@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE: int = 30 * 60 * 60
     # refresh_token 有效期
     REFRESH_TOKEN_EXPIRE: int = 7 * 24 * 60 * 60
+    # 邮箱验证 有效期
+    EMAIL_VERIFY_EXPIRE: int = 5 * 60
+    #  验证码 有效期
+    CAPTCHA_EXPIRE: int = 2 * 60
     # 分表
     BOOK_SHARD_COUNT: int = 64
 

@@ -3,6 +3,8 @@ from random import choices
 from typing import Tuple
 from uuid import uuid4
 from captcha.image import ImageCaptcha
+
+from app.core import settings
 from app.services.cache_service import cache_delete, cache_get, cache_set
 
 
@@ -22,7 +24,7 @@ class CaptchaService:
             length: int = 4,
             width: int = 160,
             height: int = 60,
-            expire: int = 120  # 2分钟
+            expire: int = settings.CAPTCHA_EXPIRE  # 2分钟
     ) -> Tuple[bytes, str]:
         """生成验证码图片并缓存，返回图片 bytes 和 ID"""
         text = CaptchaService.generate_captcha_text(length)
