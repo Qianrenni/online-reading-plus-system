@@ -58,10 +58,10 @@ async def register(
     """
     key_prefix = f'email_verified:{user.email}'
     if not await CaptchaService.verify_captcha(captcha_id=x_captcha_id, captcha_text=captcha):
-        raise CustomException(status_code=status.HTTP_400_BAD_REQUEST, detail='验证码错误')
+        raise CustomException(status_code=status.HTTP_400_BAD_REQUEST, message='验证码错误')
     is_verify_email = await cache_get(key_prefix=key_prefix)
     if not is_verify_email:
-        raise CustomException(status_code=status.HTTP_400_BAD_REQUEST, detail='邮箱未验证')
+        raise CustomException(status_code=status.HTTP_400_BAD_REQUEST, message='邮箱未验证')
     await user_service.create_user(
         db=database,
         username=user.username,
