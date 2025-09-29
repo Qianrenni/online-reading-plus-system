@@ -5,8 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api import token_router, user_router, book_router, shelf_router, user_reading_progress_router
+from app.api import token_router, user_router, book_router, shelf_router, user_reading_progress_router, captcha_router
+from app.middleware import RateLimitMiddleware
 from app.middleware.logging import logger
+
 # 在 main.py 中注册
 app = FastAPI(docs_url=None)
 
@@ -19,6 +21,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+app.add_middleware(
+    RateLimitMiddleware,
+    calls=15,
+    period=60,
+    exclude_paths={"/docs", "/openapi.json", "/health"}  # 排除 Swagger 等
 )
 # allow_origin_regex=r'$http://localhost\.*^',
 
@@ -63,3 +71,5 @@ app.include_router(book_router)
 app.include_router(shelf_router)
 # 阅读历史相关
 app.include_router(user_reading_progress_router)
+#  验证码相关
+app.include_router(captcha_router)

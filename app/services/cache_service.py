@@ -12,8 +12,8 @@ from app.middleware.logging import logger
 
 
 def generate_cache_key(
-    args: list[Any],
-    kwargs: dict[str, Any],
+    args: list[Any]|None=None,
+    kwargs: dict[str, Any]|None=None,
     exclude_args: list[int] | None= None,
     exclude_kwargs: list[str] | None= None,
     key_prefix: str | None= None,
@@ -21,6 +21,8 @@ def generate_cache_key(
     """
     统一生成缓存 key 的函数
     """
+    args = args or []
+    kwargs = kwargs or {}
     exclude_args = exclude_args or []
     exclude_kwargs = exclude_kwargs or []
 
@@ -61,9 +63,9 @@ async def _renew_lock(lock_key: str, lock_value: str, lock_timeout: int, interva
 
 
 async def cache_get(
-    args: list[Any],
-    kwargs: dict[str, Any],
     *,
+    args: list[Any]|None=None,
+    kwargs: dict[str, Any]|None=None,
     expire: int = 300,
     ignore_null: bool = True,
     exclude_args: list[int] | None= None,
@@ -186,10 +188,10 @@ async def cache_get(
 
 
 async def cache_set(
-    args: list[Any],
-    kwargs: dict[str, Any],
-    value: Any,
     *,
+    value: Any,
+    args: list[Any]|None=None,
+    kwargs: dict[str, Any]|None=None,
     expire: int = 300,
     ignore_null: bool = True,
     exclude_args: list[int] | None = None,
@@ -218,9 +220,9 @@ async def cache_set(
 
 
 async def cache_delete(
-    args: list[Any],
-    kwargs: dict[str, Any],
     *,
+    args: list[Any]|None=None,
+    kwargs: dict[str, Any]|None=None,
     exclude_args: list[int] | None = None,
     exclude_kwargs: list[str] | None = None,
     key_prefix: str | None= None,

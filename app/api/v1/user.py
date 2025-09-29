@@ -1,12 +1,15 @@
 import re
 from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException, status, Depends
+from fastapi import APIRouter, Body, HTTPException, status, Depends, Header
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core import wrap_error_handler_api
 from app.core.database import get_session
+from app.core.error_handler import CustomException
+from app.services.cache_service import cache_get, cache_delete
+from app.services.captcha_service import CaptchaService
 from app.services.user_service import user_service
 
 user_router = APIRouter(prefix="/user", tags=["user"])
@@ -19,7 +22,7 @@ class UserRegister(BaseModel):
     avatar: str = ''
 
     @field_validator('username')
-    def validate_username(cls, username: str):
+    def validate_username(cls,username: str):
         if len(username) < 3:
             raise ValueError('用户名长度至少为3个字符')
         if len(username) > 20:
@@ -29,7 +32,7 @@ class UserRegister(BaseModel):
         return username
 
     @field_validator('password')
-    def validate_password(cls, password: str):
+    def validate_password(cls,password: str):
         if len(password) < 6:
             raise ValueError('密码长度至少为6个字符')
         return password
@@ -39,7 +42,9 @@ class UserRegister(BaseModel):
 @wrap_error_handler_api()
 async def register(
         user: Annotated[UserRegister, Body()],
-        database: Annotated[AsyncSession, Depends(get_session)]
+        database: Annotated[AsyncSession, Depends(get_session)],
+        captcha: Annotated[str, Body(embed=True)],
+        x_captcha_id: Annotated[str, Header(name='X-Captcha-Id')]
 ):
     """
     用户注册接口
@@ -51,20 +56,21 @@ async def register(
     
     返回创建的用户信息
     """
-    try:
-        await user_service.create_user(
-            db=database,
-            username=user.username,
-            email=user.email,
-            password=user.password,
-            avatar=user.avatar
-        )
-        return
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    key_prefix = f'email_verified:{user.email}'
+    if not await CaptchaService.verify_captcha(captcha_id=x_captcha_id, captcha_text=captcha):
+        raise CustomException(status_code=status.HTTP_400_BAD_REQUEST, detail='验证码错误')
+    is_verify_email = await cache_get(key_prefix=key_prefix)
+    if not is_verify_email:
+        raise CustomException(status_code=status.HTTP_400_BAD_REQUEST, detail='邮箱未验证')
+    await user_service.create_user(
+        db=database,
+        username=user.username,
+        email=user.email,
+        password=user.password,
+        avatar=user.avatar
+    )
+    await cache_delete(key_prefix=key_prefix)
+    return
 
 
 class UserPasswordUpdate(BaseModel):
@@ -94,17 +100,11 @@ async def update_user(
     
     返回更新后的用户信息
     """
-    try:
-        result = await user_service.update_password(
-            db=database,
-            user_email=user.username,
-            old_password=user.old_password,
-            new_password=user.new_password,
-        )
-        if result == True:
-            return
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    result = await user_service.update_password(
+        db=database,
+        user_email=user.username,
+        old_password=user.old_password,
+        new_password=user.new_password,
+    )
+    if result:
+        return

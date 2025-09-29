@@ -88,6 +88,10 @@ class QQEmailSender:
         return False
 
 
+email_sender = QQEmailSender(
+    sender_email="2112183503@qq.com",
+    authorization_code="gbovhuasbrtzedji"  # ← 替换为你自己的授权码
+)
 # ========================
 # 使用示例
 # ========================

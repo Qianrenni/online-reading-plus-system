@@ -23,4 +23,5 @@ WHERE book_id = 1
 ORDER BY sort_order
 LIMIT 1 OFFSET 2;
 
-select count(id) from reading_plus.book_chapter
+insert into reading_plus.user_reading_progress(user_id,book_id,last_chapter_id,last_position,last_read_at)
+values  (1,1,1,0,now()),(1,2,1,0,now()),(1,3,1,0,now())
