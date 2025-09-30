@@ -17,7 +17,6 @@ book_router = APIRouter(prefix="/book", tags=["book"])
 
 
 @book_router.get("/total", response_model=ResponseModel)
-@cache(expire=settings.BOOK_CACHE_EXPIRE, exclude_kwargs=["database"])
 @wrap_error_handler_api()
 async def get_books_total_count(
         database: Annotated[AsyncSession, Depends(get_session)],
@@ -32,7 +31,6 @@ async def get_books_total_count(
 
 
 @book_router.get("/category", response_model=ResponseModel)
-@cache(expire=settings.BOOK_CACHE_EXPIRE, exclude_kwargs=["database"])
 @wrap_error_handler_api()
 async def get_book_category(
         database: Annotated[AsyncSession, Depends(get_session)]
@@ -83,7 +81,6 @@ async def get_book(
 
 
 @book_router.get("/toc/{book_id}", response_model=ResponseModel)
-@cache(expire=settings.BOOK_CACHE_EXPIRE, exclude_kwargs=["database"])
 @wrap_error_handler_api()
 async def get_book_toc(
         database: Annotated[AsyncSession, Depends(get_session)]
@@ -99,7 +96,6 @@ async def get_book_toc(
 
 
 @book_router.get("/chapter/{id}", dependencies=[Depends(get_current_user)], response_model=ResponseModel)
-@cache(expire=settings.BOOK_CACHE_EXPIRE, exclude_kwargs=["database"])
 @wrap_error_handler_api()
 async def get_book_chapter(
         database: Annotated[AsyncSession, Depends(get_session)]
@@ -116,7 +112,6 @@ async def get_book_chapter(
 
 @book_router.get("/chapter/{book_id}/{chapter_index}", dependencies=[Depends(get_current_user)],
                  response_model=ResponseModel)
-@cache(expire=settings.BOOK_CACHE_EXPIRE, exclude_kwargs=["database"])
 @wrap_error_handler_api()
 async def get_book_chapter_by_index(
         database: Annotated[AsyncSession, Depends(get_session)],

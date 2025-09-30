@@ -133,7 +133,7 @@ async def cache_get(
             )
             if should_cache:
                 await redis_pool.setex(
-                    cache_key, expire, json.dumps(result, default=str)
+                    cache_key, expire, json.dumps(result)
                 )
                 logger.info(f"Cache set: {cache_key} (expire={expire}s)")
 
