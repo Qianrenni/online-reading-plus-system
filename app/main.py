@@ -14,13 +14,21 @@ app = FastAPI(docs_url=None)
 
 # 挂载静态文件目录
 app.mount("/static", StaticFiles(directory="./app/static"), name="static")
-
+# 开发环境允许的源（包括本地）
+DEV_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://your-frontend-domain.com",  # 生产域名
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=DEV_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["x-captcha-id"],  # 暴露自定义头部
 )
 app.add_middleware(
     RateLimitMiddleware,

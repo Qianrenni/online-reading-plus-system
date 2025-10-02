@@ -19,5 +19,5 @@ async def get_captcha():
     return Response(
         content=image_bytes,
         media_type="image/png",
-        headers={"X-Captcha-ID": captcha_id}
+        headers={"x-captcha-id": captcha_id}
     )
