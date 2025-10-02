@@ -1,0 +1,224 @@
+.bt {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1.125em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 2em;
+    text-align: center;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 1em 0
+    }
+.bt1 {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1.125em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.2;
+    text-align: left;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 1em 0 0.5em
+    }
+.calibre {
+    display: block;
+    font-size: 1em;
+    line-height: 1.2;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0 5pt
+    }
+.calibre1 {
+    display: block
+    }
+.calibre2 {
+    height: auto;
+    width: auto
+    }
+.calibre3 {
+    display: block;
+    margin: 1em 0
+    }
+.calibre4 {
+    display: block
+    }
+.calibre5 {
+    display: block;
+    line-height: 1.2
+    }
+.content-db {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: justify;
+    text-align-last: left;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 0.25em 0 0.125em 2em
+    }
+.contentb {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1.375em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.5em;
+    text-align: left;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 0.6em 0 1.5em
+    }
+.db {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1.375em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 2em;
+    text-align: left;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 0.6em 0 1.5em
+    }
+.foot {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 0.75em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.5em;
+    text-align: justify;
+    text-align-last: left;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 0.6em 0 0
+    }
+.footnote-anchor {
+    font-size: 1em;
+    line-height: 1.2;
+    text-align: justify;
+    text-indent: 0;
+    margin: 0
+    }
+.footnote-link {
+    font-size: 0.75em;
+    vertical-align: super
+    }
+.footnotes {
+    display: block;
+    margin-bottom: 6pt;
+    margin-top: 6pt
+    }
+.generated-style {
+    display: block;
+    text-align: center
+    }
+.generated-style1 {
+    line-height: 1.2
+    }
+.generated-style2 {
+    height: auto;
+    line-height: 1.2;
+    width: auto
+    }
+.italic {
+    font-style: italic;
+    font-weight: normal
+    }
+.itext-noindent {
+    display: block;
+    margin: 1em 0
+    }
+.k {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 0.875em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.2;
+    text-align: justify;
+    text-align-last: left;
+    text-decoration: none;
+    text-indent: 2em;
+    margin: 0.6em 2em 0
+    }
+.photo {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 0 0 1.5em
+    }
+.right {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.2;
+    text-align: right;
+    text-decoration: none;
+    text-indent: 2em;
+    margin: 0.6em 2em 0 0
+    }
+.x {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1.375em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.5em;
+    text-align: justify;
+    text-align-last: left;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 0.6em 0 1.5em
+    }
+.x-109-0-override {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1.375em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.5em;
+    text-align: left;
+    text-align-last: left;
+    text-decoration: none;
+    text-indent: 0;
+    margin: 0.6em 0 1.5em
+    }
+.zw {
+    -webkit-text-stroke: -webkit-text;
+    display: block;
+    font-size: 1em;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.2;
+    text-align: justify;
+    text-align-last: left;
+    text-decoration: none;
+    text-indent: 2em;
+    margin: 0.6em 0 0
+    }

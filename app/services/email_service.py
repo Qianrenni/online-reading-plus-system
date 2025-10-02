@@ -103,8 +103,8 @@ if __name__ == "__main__":
     )
     # 发送纯文本邮件
     success = sender.send_email(
-        to_emails=["1093171693@qq.com"],
-        subject="欢迎注册我们的应用！",
+        to_emails=["3319913902@qq.com"],
+        subject="欢迎投递！",
         body="感谢您的注册，祝您使用愉快！"
     )
 

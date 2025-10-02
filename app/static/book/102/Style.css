@@ -1,0 +1,172 @@
+@charset "UTF-8";
+.hide{
+	display:none;
+	}
+
+/*内文*/
+p {
+	line-height:1.6em;
+	margin:0;
+	text-indent:2em;
+	}
+p:last-child{
+	margin-bottom:0;
+	}
+div:last-child{
+	margin-bottom:0;
+	}
+
+/*标题*/
+h1 {
+	font-size:1.4em;
+	margin:2em 0 3em 0;
+	text-align:center;
+	}
+.num {
+	display:block;
+	font-size:0.75em;
+	padding:0.2em 0 0.2em 0;
+	}
+h2 {
+	font-size:1.4em;
+	margin:0 0 2.5em 0;
+	}
+
+/*段落标记*/
+
+/*作者*/
+.author {
+	font-size:0.95em;
+	text-align:right;
+	margin:0.5em 0 2em 0;
+	}
+
+/*Box*/
+div.boxmid {
+	border: 4px solid #dadada;
+	border-radius:8px;
+	margin:2em 1em 2em 1em;
+	padding:1em 0.7em 0.7em 1em;
+	}
+.boxmid h3 {
+	margin:0 0 0.75em 0;
+	}
+.boxmid h4 {
+	margin:1.5em 0 0.75em 0;
+	}
+.boxmid p {
+	font-size:0.95em;
+	text-indent:0em;
+	}
+.boxmid ul {
+	font-size:0.95em;
+	margin:0;
+	padding:0 0 0 1.5em;
+	}
+.boxmid ol {
+	font-size:0.95em;
+	margin:0;
+	padding:0 0 0 1.5em;
+	}
+
+/*凸排*/
+.qt1 {
+	margin:0 0 0 3em;
+	text-indent:-1em;
+	}
+
+/*楷体*/
+.kai {
+	color:#663300;
+	font-family:"标楷体", "BiauKai", "Lucida Grande", Serif;
+	margin:1.5em 0 1.5em 0;
+	}
+.kai p {
+	font-family:"标楷体", "BiauKai", "Lucida Grande", Serif;
+	}
+.kai li {
+	font-family:"标楷体", "BiauKai", "Lucida Grande", Serif;
+	}
+span.kai {
+	color:#663300;
+	font-family:"标楷体", "BiauKai", "Lucida Grande", Serif;
+	margin:0;
+	}
+
+/*分段符号*/
+.sec {
+	color:#8e8e8e;
+	margin-top:2em;
+	margin-bottom:2em;
+	text-align:center;
+	text-indent:0em;
+	}
+
+/*特殊字级大小*/
+.smaller1 {
+	font-size:0.95em;
+	}
+
+/*粗体*/
+.bold {
+	font-weight:bold;
+	}
+
+/*列点*/
+ul {
+	margin:1em auto 1em 1em;
+	}
+ol {
+	margin:1em auto 1em 1em;
+	}
+li {
+	line-height:1.6em;
+	margin:0.3em auto 0.3em auto;
+	}
+
+/*註释-仅随章註时*/
+a.footnote {
+	color:#800000;
+	font-size:0.6em;
+	line-height:1em;
+	margin-right:0.5em;
+	text-decoration :none;
+	vertical-align:super;
+	}
+ol.footnote {
+	border-top:1px #ad8459 solid;
+	font-size:0.8em;
+	margin:5em 0 0 0;
+	}
+img.pw {
+	vertical-align:text-top;
+	width:1em;
+	}
+
+
+/*图片图说*/
+.sec {
+	text-align:center;
+	margin:2.5em auto;
+	}
+.sec img {
+	width:8em;
+	}
+
+/*表格*/
+
+table {
+	border:1px solid #8e8e8e;
+	border-collapse:collapse;
+	margin:2em;
+	}
+td {
+	border:1px solid #8e8e8e;
+	margin:0;
+	padding:0.5em;
+	vertical-align:top;
+	}
+td p {
+	font-size:0.95em;
+	text-indent:0em;
+	}

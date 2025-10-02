@@ -1,0 +1,166 @@
+.calibre {
+  background-color: #FFF;
+  display: block;
+  font-size: 1em;
+  line-height: 1.2;
+  padding-left: 0;
+  padding-right: 0;
+  text-align: center;
+  margin: 0 5pt;
+}
+.calibre1 {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+}
+.calibre2 {
+  display: block;
+  font-size: 1em;
+  line-height: 1.2;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0 5pt;
+}
+.calibre3 {
+  display: block;
+}
+.calibre4 {
+  display: block;
+  font-size: 1.5em;
+  font-weight: bold;
+  line-height: 1.2;
+  margin: 0.67em 0;
+}
+.calibre5 {
+  color: rgb(0, 0, 0);
+  display: block;
+  font-family: "PingFang SC";
+  font-size: 0.83333em;
+  font-weight: bold;
+  line-height: 1.2;
+  text-align: center;
+}
+.calibre6 {
+  font-weight: bold;
+  line-height: 1.2;
+}
+.calibre7 {
+  display: block;
+  margin: 1em 0;
+}
+.calibre8 {
+  color: rgb(120, 120, 120);
+  display: block;
+  font-family: "PingFang SC";
+  font-size: 0.75em;
+  font-weight: bold;
+  text-align: center;
+}
+.calibre9 {
+  font-weight: bold;
+}
+.calibre10 {
+  font-family: "PingFang SC";
+  font-size: 1em;
+  line-height: 1.2;
+}
+.calibre11 {
+  color: rgb(0, 0, 0);
+  display: block;
+  font-family: "PingFang SC";
+  font-size: 0.66667em;
+  font-weight: bold;
+  line-height: 1.2;
+  text-align: center;
+}
+.calibre12 {
+  display: block;
+  font-family: "FZKai-Z03";
+  font-size: 1em;
+  line-height: 1.2;
+  text-align: right;
+}
+.calibre13 {
+  font-family: "PingFang SC";
+  font-size: 1em;
+  font-style: oblique;
+  line-height: 1.2;
+}
+.calibre14 {
+  font-style: italic;
+}
+.calibre15 {
+  display: block;
+  font-family: "PingFang SC";
+  font-size: 1em;
+  line-height: 1.2;
+  text-align: center;
+}
+.calibre16 {
+  font-size: 0.75em;
+  line-height: 1.2;
+  vertical-align: super;
+}
+.calibre17 {
+  color: rgb(0, 0, 0);
+  font-family: "FZFangSong-Z02";
+  font-size: 0.875em;
+  line-height: 1.2;
+}
+.calibre18 {
+  color: rgb(0, 0, 0);
+  font-family: "PingFang SC";
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 1.2;
+}
+.calibre19 {
+  font-family: "PingFang SC";
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 1.2;
+}
+.calibre20 {
+  color: rgb(0, 0, 0);
+  font-family: "FZFangSong-Z02";
+  font-size: 1em;
+  line-height: 1.2;
+}
+.calibre21 {
+  font-family: "PingFang SC";
+  font-size: 0.875em;
+  line-height: 1.2;
+}
+.calibre22 {
+  font-size: 0.75em;
+  line-height: 1.2;
+  vertical-align: sub;
+}
+.calibre23 {
+  color: rgb(0, 0, 0);
+  font-family: "PingFang SC";
+  font-size: 0.875em;
+  line-height: 1.2;
+}
+.calibre24 {
+  font-family: "Microsoft YaHei";
+  font-size: 1em;
+  line-height: 1.2;
+}
+.calibre25 {
+  display: block;
+  list-style-type: decimal;
+  margin: 1em 0;
+}
+.calibre26 {
+  display: list-item;
+}
+.epub-footnote {
+  height: auto;
+  width: 11px;
+}
+.epub-footnote1 {
+  height: auto;
+  width: 10px;
+}

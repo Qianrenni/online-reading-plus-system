@@ -80,14 +80,17 @@ class BookService:
         if miss_book_ids:
             statement = select(Book).where(Book.id.in_(miss_book_ids))
             result = await database.exec(statement)
+            books = result.all()
             tasks = [cache_set(
                 args=[],
                 kwargs={"book_id": book.id},
                 key_prefix="get_book_by_id",
-                value=book
-            ) for book in result.all()]
+                value=book.model_dump(mode="json")
+            ) for book in books]
             await asyncio.gather(*tasks)
-            book_list.extend(result.all())
+            for book in books:
+                book.cover = f"{settings.SERVER_URL}/static/book/{book.id}/{book.cover}"
+            book_list.extend(books)
         return book_list
 
     @staticmethod

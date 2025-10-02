@@ -1,0 +1,63 @@
+/*横排*/
+p {
+	font-size:0.8em;
+	line-height:1.5em;
+	margin:0.25em;
+	}
+.title {
+		line-height:1.6em
+	}
+.book-title-number{
+	display:block;
+	font-size:1em;
+	font-weight:bold;
+	padding-bottom:0.75em;
+	}
+.book-title-main {
+	display:block;
+	font-size:1.4em;
+	margin-bottom:0;
+	padding-bottom:0.5em;
+	}
+.book-title-deputy {
+	display:block;
+	font-size:1.1em;
+	padding-bottom:0.5em;
+	}
+.book-title-original {
+	display:block;
+	font-size:1em;
+	margin-bottom:1.75em;
+	padding-bottom:0.5em;
+	}
+.pic {
+	margin:1.5em auto 0 0;
+	}
+.pic img {
+	width:65%;
+	}
+
+
+
+
+.main {
+	margin:auto 2em;
+	}
+hr {
+	border-top:1px solid #8e8e8e;
+	border-bottom:0px;
+	border-right:0px;
+	border-left:0px;
+	height:0;
+	margin:1em 0;
+	}
+table {
+	margin:0;
+	}
+td {
+	padding:0;
+	vertical-align:top;
+	}
+td p {
+	margin:0;
+	}
