@@ -12,8 +12,8 @@ class CustomException(Exception):
     def __init__(
             self,
             status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message: str = None,
-            headers: dict = None,
+            message: str|None = None,
+            headers: dict|None = None,
             media_type: str = "application/json",
             is_error: bool = False,
     ):
@@ -35,8 +35,8 @@ class CustomException(Exception):
 
 def wrap_error_handler_api(
         status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
-        message: str = None,
-        headers: dict = None,
+        message: str | None = None,
+        headers: dict | None = None,
         media_type: str = "application/json",
         # background: list = None
 
@@ -55,10 +55,11 @@ def wrap_error_handler_api(
                 )
                 return JSONResponse(
                     status_code=e.status_code,
-                    content=ResponseModel(
-                        code=ResponseCode.ERROR,
-                        message=str(e) if e.message is None else e.message
-                    ).json(),
+                    content={
+                        "code": ResponseCode.ERROR,
+                        "message": e.message if e.message else str(e),
+                        "data": None
+                    },
                     headers=e.headers,
                     media_type=e.media_type
                 )
@@ -71,10 +72,11 @@ def wrap_error_handler_api(
                 )
                 return JSONResponse(
                     status_code=status_code,
-                    content=ResponseModel(
-                        code=ResponseCode.ERROR,
-                        message=str(e) if message is None else message
-                    ).json(),
+                    content={
+                        "code": ResponseCode.ERROR,
+                        "message": message if message else str(e),
+                        "data": None
+                    },
                     headers=headers,
                     media_type=media_type
                 )

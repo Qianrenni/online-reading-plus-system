@@ -45,7 +45,9 @@ class Token(ResponseModel):
 @token_router.post('/get', response_model=Token)
 @wrap_error_handler_api(status_code=status.HTTP_401_UNAUTHORIZED, headers={"WWW-Authenticate": "Bearer"})
 async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        username: Annotated[str, Body(embed=True)],
+
+        password: Annotated[str, Body(embed=True)],        
         database: Annotated[AsyncSession, Depends(get_session)],
         captcha: Annotated[str, Body(embed=True)],
         x_captcha_id: Annotated[str, Header(name='X-Captcha-Id')]
@@ -66,7 +68,7 @@ async def login_for_access_token(
             status_code=status.HTTP_400_BAD_REQUEST,
             message='验证码错误'
         )
-    user_dict = {"user_email": form_data.username, "password": form_data.password}
+    user_dict = {"user_email": username, "password": password}
     user = await UserService.authenticate_user(db=database, **user_dict)
     content = json.dumps({
         "id": user.id,
@@ -222,3 +224,16 @@ async def verify_email_callback(token: Annotated[str, Query()]):
     </html>
     """
     return HTMLResponse(content=html_content)
+@token_router.get('/auth/me', response_model=ResponseModel)
+@wrap_error_handler_api(status_code=status.HTTP_401_UNAUTHORIZED, headers={"WWW-Authenticate": "Bearer"})
+async def get_me(
+        Authorization: Annotated[str, Header(name='Authorization')],
+        current_user: Annotated[User, Depends(get_current_user)]
+):
+    """
+    获取当前用户信息
+    :param Authorization:  访问令牌
+    :return:  用户信息
+    """
+    
+    return ResponseModel(data={'user':current_user})

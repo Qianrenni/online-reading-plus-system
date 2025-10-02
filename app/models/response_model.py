@@ -3,7 +3,7 @@ import enum
 from pydantic import BaseModel
 
 
-class ResponseCode(enum.Enum):
+class ResponseCode(enum.IntEnum):
     SUCCESS = 0
     ERROR = 1
 

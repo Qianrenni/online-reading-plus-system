@@ -10,6 +10,7 @@ from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 
 from app.core.config import settings
+from app.core.error_handler import CustomException
 from app.middleware.logging import logger
 
 # 解决bcrypt版本兼容性问题
@@ -75,9 +76,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     - return: 当前用户
     - raises HTTPException: 当访问令牌无效或已过期时抛出401未授权异常
     """
-    credentials_exception = HTTPException(
+    credentials_exception = CustomException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        message="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -87,11 +88,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         if not user:
             raise credentials_exception
         if not expire or expire < time():
-            credentials_exception.detail = "Token expired"
+            credentials_exception.message = "Token expired"
             raise credentials_exception
     except InvalidTokenError as e:
         logger.error(f"Invalid token: {e}")
-        credentials_exception.detail = f"Invalid token: {e}"
+        credentials_exception.message = f"Invalid token: {e}"
         raise credentials_exception
 
     # 这里应该从数据库获取用户
