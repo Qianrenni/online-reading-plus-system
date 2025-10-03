@@ -24,7 +24,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             app,
             calls: int = 15,  # 允许请求次数
             period: int = 60,  # 时间窗口（秒）
-            exclude_paths: set = None,  # 不限流的路径
+            exclude_paths: set | None= None,  # 不限流的路径
     ):
         super().__init__(app)
         self.calls = calls
@@ -48,10 +48,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if current > self.calls:
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                content=ResponseModel(
-                    code=ResponseCode.ERROR,
-                    message="操作过于频繁，请稍后再试"
-                ).json()
+                content={
+                    "code": ResponseCode.ERROR,
+                    "message": "请求频率过高，请稍后重试",
+                    "data": None
+                }
             )
         response = await call_next(request)
         return response
